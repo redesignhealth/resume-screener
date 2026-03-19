@@ -313,9 +313,13 @@ SCORING GUIDANCE:
         total_weight = 0
         weighted_sum = 0
 
-        for criterion in criteria:
-            name = criterion["name"]
-            weight = self.weight_values.get(criterion["weight"], 1)
+       for criterion in criteria:
+    	name = criterion["name"]
+  	raw_weight = criterion["weight"]
+  	if is instance(raw_weight, (int, float)):
+            weight = raw_weight * 10
+   	else:
+    	    weight = self.weight_values.get(raw_weight, 1)
 
             if name in scores and isinstance(scores[name], (int, float)):
                 weighted_sum += scores[name] * weight
@@ -361,7 +365,19 @@ SCORING GUIDANCE:
             })
             return empty_scores
 
-        prompt = self._build_prompt(resume_text, job_title, candidate_name, role_config)
+        # Check if this role uses scoring_prompt format (new format)
+        if "scoring_prompt" in role_config:
+            prompt_template = role_config["scoring_prompt"]
+            prompt = f"""Candidate Name: {candidate_name}
+Applied for: {job_title}
+
+RESUME/PROFILE:
+{resume_text}
+
+{prompt_template}"""
+        else:
+            # Use criteria-based format (legacy)
+            prompt = self._build_prompt(resume_text, job_title, candidate_name, role_config)
 
         try:
             response = self.client.messages.create(
@@ -380,8 +396,28 @@ SCORING GUIDANCE:
 
             scores = json.loads(response_text)
 
-            # Calculate weighted total score
-            if role_config.get("dual_track"):
+            # Handle scoring_prompt format (new format with direct score)
+            if "scoring_prompt" in role_config:
+                # New format returns score directly
+                base_score = scores.get("score", 0)
+
+                # Flatten dimension_scores for display
+                dimension_scores = scores.get("dimension_scores", {})
+                for dim_name, dim_score in dimension_scores.items():
+                    scores[dim_name] = dim_score
+
+                # Create criteria labels from dimension names
+                scores["criteria_labels"] = {
+                    name: name.replace("_", " ").title()
+                    for name in dimension_scores.keys()
+                }
+
+                # Map reasoning to fit_summary for consistency
+                if "reasoning" in scores and "fit_summary" not in scores:
+                    scores["fit_summary"] = scores["reasoning"]
+
+            # Handle criteria-based format (legacy)
+            elif role_config.get("dual_track"):
                 base_score, track_used = self._calculate_dual_track_score(scores, role_config)
                 scores["track_used"] = track_used
                 # Build criteria labels only for the track that was used
@@ -399,7 +435,7 @@ SCORING GUIDANCE:
             # Apply founder boost if applicable
             founder_boost = role_config.get("founder_boost", 0)
             is_founder = scores.get("is_founder", False)
-            if founder_boost and is_founder:
+            if founder_boost and is_founder and founder_boost > 0:
                 boosted_score = round(base_score * (1 + founder_boost), 1)
                 scores["total_score"] = min(boosted_score, 10.0)  # Cap at 10
                 scores["founder_boost_applied"] = True
