@@ -44,17 +44,14 @@ class ResumeScorer:
 
     def get_role_config(self, job_id: str = None, job_title: str = None) -> dict:
         """Get role configuration by job_id or job_title."""
-        # Try to find by job_id first
         if job_id and job_id in self.roles:
             return self.roles[job_id]
 
-        # Try to find by job_title
         if job_title:
             for role in self.roles.values():
                 if role.get("job_title", "").lower() == job_title.lower():
                     return role
 
-        # Fall back to legacy config or first role
         if self._legacy_criteria:
             return {
                 "criteria": self._legacy_criteria,
@@ -62,7 +59,6 @@ class ResumeScorer:
                 "job_title": "Unknown"
             }
 
-        # Return first role as default
         if self.roles:
             return list(self.roles.values())[0]
 
@@ -73,7 +69,6 @@ class ResumeScorer:
         criteria = role_config.get("criteria", [])
         role_title = role_config.get("job_title", job_title)
 
-        # Build criteria descriptions grouped by track
         classification_criteria = None
         track_a_criteria = []
         track_b_criteria = []
@@ -83,9 +78,9 @@ class ResumeScorer:
             weight = criterion.get("weight", "")
             if criterion["name"] == "profile_classification":
                 classification_criteria = criterion
-            elif weight.startswith("track_a_"):
+            elif isinstance(weight, str) and weight.startswith("track_a_"):
                 track_a_criteria.append(criterion)
-            elif weight.startswith("track_b_"):
+            elif isinstance(weight, str) and weight.startswith("track_b_"):
                 track_b_criteria.append(criterion)
             elif weight != "none":
                 other_criteria.append(criterion)
@@ -133,12 +128,10 @@ Respond with ONLY a JSON object. Include ALL of these fields:
     "data_note": "<explanation if insufficient_data is true, omit if false>",
 """
 
-        # Add Track A fields
         prompt += "\n    // Track A scores (include if Track A or Hybrid):\n"
         for c in track_a_criteria:
             prompt += f'    "{c["name"]}": <score 1-10 or null if not applicable>,\n'
 
-        # Add Track B fields
         prompt += "\n    // Track B scores (include if Track B or Hybrid):\n"
         for c in track_b_criteria:
             prompt += f'    "{c["name"]}": <score 1-10 or null if not applicable>,\n'
@@ -162,7 +155,6 @@ SCORING GUIDANCE:
 
     def _build_prompt(self, resume_text: str, job_title: str, candidate_name: str, role_config: dict) -> str:
         """Build the scoring prompt from config criteria."""
-        # Check for dual-track roles
         if role_config.get("dual_track"):
             return self._build_dual_track_prompt(resume_text, job_title, candidate_name, role_config)
 
@@ -171,7 +163,11 @@ SCORING GUIDANCE:
 
         criteria_text = ""
         for i, criterion in enumerate(criteria, 1):
-            weight_label = criterion["weight"].replace("_", " ").title()
+            raw_weight = criterion["weight"]
+            if isinstance(raw_weight, (int, float)):
+                weight_label = f"{int(raw_weight * 100)}% weight"
+            else:
+                weight_label = raw_weight.replace("_", " ").title()
             criteria_text += f"""{i}. **{criterion["label"]}** (Weight: {weight_label})
 {criterion["description"]}
 """
@@ -179,7 +175,6 @@ SCORING GUIDANCE:
         criteria_names = [c["name"] for c in criteria]
         json_fields = ",\n    ".join([f'"{name}": <score 1-10>' for name in criteria_names])
 
-        # Special handling for NYC location (hard gate, not scored)
         nyc_note = ""
         if role_config.get("nyc_hard_gate"):
             nyc_note = """
@@ -190,7 +185,6 @@ NYC LOCATION CHECK (HARD GATE - NOT A SCORED DIMENSION):
 - This is a hard requirement - if not in NYC, the candidate will not be alerted regardless of score.
 """
 
-        # Special handling for years of experience
         yoe_note = ""
         if any(c["name"] == "years_experience_fit" for c in criteria):
             yoe_note = """
@@ -240,10 +234,9 @@ SCORING GUIDANCE:
 
             for criterion in criteria:
                 weight_str = criterion.get("weight", "")
-                if not weight_str.startswith(track_prefix):
+                if not isinstance(weight_str, str) or not weight_str.startswith(track_prefix):
                     continue
 
-                # Extract percentage from weight like "track_a_40" -> 40
                 try:
                     weight = int(weight_str.replace(track_prefix, ""))
                 except ValueError:
@@ -259,7 +252,6 @@ SCORING GUIDANCE:
             return round(weighted_sum / total_weight, 1)
 
         if track == "Hybrid":
-            # Score both tracks and use the higher one
             track_a_score = calc_track_score("track_a_")
             track_b_score = calc_track_score("track_b_")
             if track_a_score >= track_b_score:
@@ -279,10 +271,9 @@ SCORING GUIDANCE:
 
         for criterion in criteria:
             weight_str = criterion.get("weight", "")
-            if not weight_str.startswith("pct_"):
+            if not isinstance(weight_str, str) or not weight_str.startswith("pct_"):
                 continue
 
-            # Extract percentage from weight like "pct_40" -> 40
             try:
                 weight = int(weight_str.replace("pct_", ""))
             except ValueError:
@@ -300,12 +291,10 @@ SCORING GUIDANCE:
 
     def _calculate_weighted_score(self, scores: dict, role_config: dict) -> float:
         """Calculate weighted overall score."""
-        # Handle dual-track roles separately
         if role_config.get("dual_track"):
             score, _ = self._calculate_dual_track_score(scores, role_config)
             return score
 
-        # Handle percentage-weighted roles
         if role_config.get("percentage_weights"):
             return self._calculate_percentage_weighted_score(scores, role_config)
 
@@ -313,13 +302,17 @@ SCORING GUIDANCE:
         total_weight = 0
         weighted_sum = 0
 
-       for criterion in criteria:
-    	name = criterion["name"]
-  	raw_weight = criterion["weight"]
-  	if is instance(raw_weight, (int, float)):
-            weight = raw_weight * 10
-   	else:
-    	    weight = self.weight_values.get(raw_weight, 1)
+        for criterion in criteria:
+            name = criterion["name"]
+            raw_weight = criterion.get("weight", "medium")
+
+            # --- THIS IS THE KEY FIX ---
+            # If weight is already a number (e.g. 0.40), use it directly scaled to 10.
+            # If weight is a text label (e.g. "high"), look it up in weight_values as before.
+            if isinstance(raw_weight, (int, float)):
+                weight = raw_weight * 10
+            else:
+                weight = self.weight_values.get(raw_weight, 1)
 
             if name in scores and isinstance(scores[name], (int, float)):
                 weighted_sum += scores[name] * weight
@@ -330,10 +323,9 @@ SCORING GUIDANCE:
 
         calculated_score = round(weighted_sum / total_weight, 1)
 
-        # Apply NYC cap if applicable
         if "nyc_location" in scores:
             nyc_score = scores.get("nyc_location", 10)
-            if nyc_score <= 4:  # Not in NYC
+            if nyc_score <= 4:
                 calculated_score = min(calculated_score, 4.0)
 
         return calculated_score
@@ -365,7 +357,6 @@ SCORING GUIDANCE:
             })
             return empty_scores
 
-        # Check if this role uses scoring_prompt format (new format)
         if "scoring_prompt" in role_config:
             prompt_template = role_config["scoring_prompt"]
             prompt = f"""Candidate Name: {candidate_name}
@@ -376,7 +367,6 @@ RESUME/PROFILE:
 
 {prompt_template}"""
         else:
-            # Use criteria-based format (legacy)
             prompt = self._build_prompt(resume_text, job_title, candidate_name, role_config)
 
         try:
@@ -388,7 +378,6 @@ RESUME/PROFILE:
 
             response_text = response.content[0].text.strip()
 
-            # Parse JSON from response
             if "```json" in response_text:
                 response_text = response_text.split("```json")[1].split("```")[0].strip()
             elif "```" in response_text:
@@ -396,48 +385,39 @@ RESUME/PROFILE:
 
             scores = json.loads(response_text)
 
-            # Handle scoring_prompt format (new format with direct score)
             if "scoring_prompt" in role_config:
-                # New format returns score directly
                 base_score = scores.get("score", 0)
 
-                # Flatten dimension_scores for display
                 dimension_scores = scores.get("dimension_scores", {})
                 for dim_name, dim_score in dimension_scores.items():
                     scores[dim_name] = dim_score
 
-                # Create criteria labels from dimension names
                 scores["criteria_labels"] = {
                     name: name.replace("_", " ").title()
                     for name in dimension_scores.keys()
                 }
 
-                # Map reasoning to fit_summary for consistency
                 if "reasoning" in scores and "fit_summary" not in scores:
                     scores["fit_summary"] = scores["reasoning"]
 
-            # Handle criteria-based format (legacy)
             elif role_config.get("dual_track"):
                 base_score, track_used = self._calculate_dual_track_score(scores, role_config)
                 scores["track_used"] = track_used
-                # Build criteria labels only for the track that was used
                 track_prefix = "track_a_" if track_used.startswith("A") else "track_b_"
                 scores["criteria_labels"] = {
                     c["name"]: c["label"]
                     for c in criteria
-                    if c.get("weight", "").startswith(track_prefix)
+                    if isinstance(c.get("weight", ""), str) and c["weight"].startswith(track_prefix)
                 }
             else:
                 base_score = self._calculate_weighted_score(scores, role_config)
-                # Add criteria labels for display
                 scores["criteria_labels"] = {c["name"]: c["label"] for c in criteria}
 
-            # Apply founder boost if applicable
             founder_boost = role_config.get("founder_boost", 0)
             is_founder = scores.get("is_founder", False)
             if founder_boost and is_founder and founder_boost > 0:
                 boosted_score = round(base_score * (1 + founder_boost), 1)
-                scores["total_score"] = min(boosted_score, 10.0)  # Cap at 10
+                scores["total_score"] = min(boosted_score, 10.0)
                 scores["founder_boost_applied"] = True
             else:
                 scores["total_score"] = base_score
