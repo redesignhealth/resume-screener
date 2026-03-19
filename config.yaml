@@ -2,50 +2,65 @@
 # Multi-role support
 
 roles:
-  # Role 1: Senior Talent Lead - India
+# Role 1: Talent Engineering Lead, India
   - job_id: "3460fc9f-f3e6-46c2-b846-1a2fb1017b9a"
-    job_title: "Senior Talent Lead, India"
+    job_title: "Talent Engineering Lead, India"
     threshold: 7.0
-
+    archive_threshold: 5.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
     criteria:
-      - name: "technical_ai_ability"
-        label: "Technical & AI Ability"
-        weight: "high"
+      - name: "systems_building_ai_engineering"
+        label: "Systems Building & AI Engineering"
+        weight: 0.40
         description: |
-          Experience with AI tools like Claude, Cursor, Clay, or any vibe coding/automation tools.
-          Bonus for CS or engineering degree.
+          Score 1-10. Has the candidate built and shipped production AI systems end-to-end?
+          Look for: agents, pipelines, automations using Claude Code, Clay, Cursor, Railway, n8n, or equivalent.
+          Evidence of architecting full workflows — not just prompting or light config.
+          Fast-track if: GitHub/portfolio with live deployed projects, or title is Forward Deployed Engineer,
+          GTM Engineer, AI Engineer, or RevOps Engineer at a startup.
+          Auto-archive if score is 2 or below, regardless of total.
 
-      - name: "recruiting_experience"
-        label: "Recruiting Experience"
-        weight: "medium"
+      - name: "outbound_motion_pipeline_thinking"
+        label: "Outbound Motion & Pipeline Thinking"
+        weight: 0.30
         description: |
-          At least 1 year in talent sourcing, acquisition, or recruiting operations.
-          ATS experience is a plus.
+          Score 1-10. Has the candidate owned a full outbound motion — segmentation, scoring,
+          sequencing, A/B testing — in sales, recruiting, or growth?
+          Look for: designed the system (not just executed within it), fluency with conversion metrics,
+          sourcing or SDR experience, pipeline ownership.
 
-      - name: "startup_vc_background"
-        label: "Startup/VC Background"
-        weight: "medium"
+      - name: "startup_operating_orientation"
+        label: "Startup Operating Experience & Orientation"
+        weight: 0.20
         description: |
-          Experience at startups, venture studios, or VC-backed companies.
-          Scrappy, fast-moving environments.
+          Score 1-10. Has the candidate built in early-stage or high-growth environments?
+          Look for: comfort with ambiguity, cross-functional ownership, operating without playbooks,
+          shipping under constraints. Penalize exclusively large-company or process-dependent backgrounds.
 
-      - name: "builder_mentality"
-        label: "Builder Mentality"
-        weight: "high"
+      - name: "venture_investing_experience"
+        label: "Experience in Venture or Startup Investing"
+        weight: 0.05
         description: |
-          Evidence they have built systems, automated workflows, or created something from scratch
-          rather than just maintaining existing processes.
+          Score 1-10. Has the candidate worked in or alongside venture capital or a venture studio?
+          Look for: VC firm experience, accelerator roles, founder background, or close investor relationships.
+          Nice-to-have signal, not a requirement.
 
-      - name: "healthcare_venture_experience"
-        label: "Healthcare/Venture Experience"
-        weight: "low_bonus"
+      - name: "recruiting_domain_fluency"
+        label: "Recruiting Domain Fluency"
+        weight: 0.05
         description: |
-          Nice to have but not required. Experience in healthcare, healthtech, or venture capital.
+          Score 1-10. Does the candidate have direct recruiting or talent acquisition experience?
+          Look for: full-cycle recruiting ownership, sourcing, ATS experience, candidate-facing work.
+          Supporting dimension only — strong engineering profile can compensate for a low score here.
 
   # Role 2: Executive Assistant & Workplace Operations
   - job_id: "63841c46-29a8-40dc-8184-0c6cf7407ccc"
     job_title: "Executive Assistant & Workplace Operations"
     threshold: 7.0
+    archive_threshold: 6.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
     nyc_hard_gate: true  # If not in NYC, do not alert regardless of score
 
     criteria:
@@ -97,6 +112,9 @@ roles:
   - job_id: "e484d977-fe6b-47be-8dc2-78b44a2f51fa"
     job_title: "Managing Director of New Ventures"
     threshold: 7.0
+    archive_threshold: 6.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
     founder_boost: 0.05  # 5% boost to final score if candidate is a former founder
 
     criteria:
@@ -185,6 +203,9 @@ roles:
   - job_id: "2e254be4-be62-446a-a955-fd9732ae14d2"
     job_title: "Director of Global Development, India"
     threshold: 7.5
+    archive_threshold: 6.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
     dual_track: true  # Special flag for dual-track scoring
 
     criteria:
@@ -381,6 +402,9 @@ roles:
   - job_id: "d72d8750-c143-4889-94f2-02448d33c43c"
     job_title: "Managing Director of Ventures, India"
     threshold: 7.5
+    archive_threshold: 6.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
     founder_boost: 0.05  # 5% boost if candidate is a founder
     percentage_weights: true  # Use explicit percentage weights
 
@@ -497,6 +521,87 @@ roles:
           India-based: Currently living/working in India
           India experience: Has worked in India previously or has strong India ties
           No India signal: No apparent India connection
+
+  # Role 6: Associate, AI Buyouts
+  - job_id: "7328b134-a2ee-4036-8f7b-0c6af7f56014"
+    job_title: "Associate, AI Buyouts"
+    threshold: 7.0
+    archive_threshold: 6.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    founder_boost: false
+
+    scoring_prompt: |
+      You are an expert private equity recruiter evaluating candidates for an
+      Associate, AI Buyouts role at Redesign Health, a healthcare venture studio
+      launching an AI-driven healthcare buyout fund.
+
+      This is an EARLY CAREER role targeting candidates with 2-5 years of experience,
+      typically coming from investment banking or a first PE role.
+
+      A sample strong candidate (score ~9): Duke undergrad, JPMorgan investment
+      banking analyst, PE role at GI Partners.
+
+      SCORING DIMENSIONS (must sum to 100%):
+
+      DIMENSION 1 — Private Equity / M&A Experience (40%)
+      Tier 1 (9-10): Top-tier global PE firm (Carlyle, Welsh Carson, KKR, Blackstone,
+        CVC) OR investment banking at Goldman/JPMorgan + PE experience = 10.
+      Tier 2 (7-8.9): Healthcare-specific PE or strong tier 2 firms: Shore Capital,
+        Incline, Altaris, Windrose, Lone Pine, Avista, Water Street, Great Hill.
+      Tier 3 (5-6.9): Boutique or non-healthcare PE firms.
+      Below 4: No PE experience, corporate strategy only, academic/research only.
+      CRITICAL RULE: If background is non-investing (talent, marketing, ops, HR,
+        recruiting) — score below 4 regardless of firm prestige.
+
+      DIMENSION 2 — Career Trajectory (15%)
+      Positive: Rapid advancement, at least one promotion at same company,
+        intentional transitions showing learning velocity (e.g. Analyst > Associate
+        > Senior Associate).
+      Negative: Lateral moves without upward momentum, stagnation, same role 4+
+        years, 10+ years total experience (too senior for this role).
+
+      DIMENSION 3 — Healthcare Experience (15%)
+      Deep knowledge across care delivery, health tech, or healthcare services.
+      Ability to develop original investment theses in healthcare.
+      Score below 4 if healthcare is entirely absent from background.
+
+      DIMENSION 4 — Educational Background (25%)
+      Tier 1 (8.5-10): Ivy League, Stanford, MIT, Caltech, Oxford, Cambridge, LSE,
+        IITs, IIM A/B/C, BITS Pilani, Delhi University (St. Stephen's, Hindu College).
+        OR elite graduate: MBA at HBS, Stanford, Wharton, Kellogg, Booth, MIT Sloan,
+        INSEAD, IIM A/B/C; PhD at top research universities; MD at prestigious
+        medical schools.
+      Tier 2 (6.5-8.4): US Top 30, UC Berkeley, Michigan, Virginia, MBA top 20,
+        strong regional programs, reputable Master's programs.
+      Tier 3 (4-6.4): Regional/local universities, recognized private institutions.
+      Below 4: Unaccredited, incomplete degrees, certificates or extension only.
+
+      DIMENSION 5 — AI & Tech Fluency (5%)
+      Evidence of sophisticated AI tool usage beyond basic LLM prompting.
+      Has built systems or workflows using AI.
+      Score 7+ ONLY if there is explicit evidence of AI systems-building or
+        workflow automation.
+
+      SCORING INSTRUCTIONS:
+      - Weight scores: D1×0.40 + D2×0.15 + D3×0.15 + D4×0.25 + D5×0.05
+      - Apply CRITICAL RULE for Dimension 1 before scoring anything else
+      - Do not give benefit of the doubt — score only on explicit evidence in resume
+
+      Return JSON only:
+      {
+        "score": <weighted total, 1 decimal>,
+        "dimension_scores": {
+          "pe_experience": <1-10>,
+          "career_trajectory": <1-10>,
+          "healthcare_experience": <1-10>,
+          "educational_background": <1-10>,
+          "ai_tech_fluency": <1-10>
+        },
+        "reasoning": "<2-3 sentences explaining the score>",
+        "recommendation": "<Strong Yes | Yes | No>",
+        "red_flags": "<any critical disqualifiers>"
+      }
 
 weight_values:
   very_high: 4
