@@ -202,7 +202,7 @@ roles:
   # DUAL-TRACK SCORING SYSTEM
   - job_id: "2e254be4-be62-446a-a955-fd9732ae14d2"
     job_title: "Director of Global Development, India"
-    threshold: 7.5
+    threshold: 7.0
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
     archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
@@ -401,7 +401,7 @@ roles:
   # Role 5: Managing Director of Ventures, India
   - job_id: "d72d8750-c143-4889-94f2-02448d33c43c"
     job_title: "Managing Director of Ventures, India"
-    threshold: 7.5
+    threshold: 7.0
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
     archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
@@ -876,7 +876,7 @@ roles:
   # Role 8: Managing Director, AI Buyouts
   - job_id: "ae9abe7d-0492-400b-83dc-a90d45b5233d"
     job_title: "Managing Director, AI Buyouts"
-    threshold: 7.5
+    threshold: 7.0
     archive_threshold: 5.5
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
     archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"

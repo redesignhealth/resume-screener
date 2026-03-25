@@ -31,7 +31,7 @@ STAGE_FILTER = "Application Review"  # Only process applications in this stage (
 EXCLUDED_ROLES = ["Executive Assistant"]
 
 # ONLY run this specific role (set to None to run all roles)
-ONLY_RUN_JOB_ID = "d72d8750-c143-4889-94f2-02448d33c43c"  # Managing Director of Ventures, India
+ONLY_RUN_JOB_ID = None
 
 
 def fetch_applications_for_job(ashby: AshbyClient, job_id: str, max_count: int, stage_filter: str = None) -> list:
