@@ -8,7 +8,7 @@ roles:
     threshold: 7.0
     archive_threshold: 5.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     criteria:
       - name: "systems_building_ai_engineering"
         label: "Systems Building & AI Engineering"
@@ -60,7 +60,7 @@ roles:
     threshold: 7.0
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     nyc_hard_gate: true  # If not in NYC, do not alert regardless of score
 
     criteria:
@@ -114,7 +114,7 @@ roles:
     threshold: 7.0
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     founder_boost: 0.05  # 5% boost to final score if candidate is a former founder
 
     criteria:
@@ -205,7 +205,7 @@ roles:
     threshold: 7.5
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     dual_track: true  # Special flag for dual-track scoring
 
     criteria:
@@ -404,7 +404,7 @@ roles:
     threshold: 7.5
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     founder_boost: 0.05  # 5% boost if candidate is a founder
     percentage_weights: true  # Use explicit percentage weights
 
@@ -528,7 +528,7 @@ roles:
     threshold: 7.0
     archive_threshold: 6.0
     archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
-    archive_reason: "Does Not Meet Role Qualifications / Founder Profile Fit"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
     founder_boost: false
 
     scoring_prompt: |
@@ -602,6 +602,382 @@ roles:
         "recommendation": "<Strong Yes | Yes | No>",
         "red_flags": "<any critical disqualifiers>"
       }
+
+  # Role 7: Managing Director, Southeast Asia
+  - job_id: "632c7bdf-433d-4b69-81a2-b8950d6656e1"
+    job_title: "Managing Director, Southeast Asia"
+    threshold: 7.0
+    archive_threshold: 5.5
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
+    dual_track: true
+
+    scoring_prompt: |
+      You are an expert talent screener for Redesign Health, a healthcare venture studio.
+      Score this candidate for the Managing Director, Southeast Asia role.
+
+      Candidate Profile:
+      - Current Role: {current_role}
+      - Current Company: {current_company}
+      - Past Role: {past_role}
+      - Past Company: {past_company}
+      - LinkedIn Summary: {linkedin_summary}
+      - Experience: {experience}
+      - Education: {education}
+      - Summary: {summary}
+
+      ## INSTRUCTIONS
+
+      This role has TWO valid candidate profiles. Follow the dual-track scoring system below exactly.
+
+      ---
+
+      ### STEP 1 — PROFILE CLASSIFICATION (do this first, before scoring)
+
+      Classify the candidate into ONE of two tracks based on their PRIMARY background:
+
+      TRACK A: Investor / Banker
+      - Primary background in VC, private equity, investment banking, or management consulting
+      - Has exposure to LP relationships, fund structures, or capital markets
+      - Career path centered on financial services, investing, or advisory
+
+      TRACK B: Founder / Operator
+      - Primary background as a startup founder or early-stage operator
+      - Has raised venture capital or built a company from scratch
+      - Career path centered on building, GTM execution, and entrepreneurship
+
+      IMPORTANT RULES:
+      - If the candidate has meaningful elements of BOTH tracks, classify as "Hybrid"
+        and score on BOTH tracks, then use whichever produces the HIGHER score
+      - If there is insufficient profile data to classify, flag "insufficient_data": true
+        and explain what is missing
+
+      Include in your response:
+      - "track": "A", "B", or "Hybrid"
+      - "track_reasoning": one sentence explaining why this track was chosen
+      - "insufficient_data": true or false
+      - "data_note": explanation if insufficient_data is true, otherwise omit
+
+      ---
+
+      ### STEP 2 — SCORE ON THE APPROPRIATE TRACK
+
+      Score ONLY the dimensions for the candidate's assigned track.
+      For Hybrid candidates, score both tracks and use the higher composite score.
+
+      NOTE ON IRRELEVANT FUNCTIONS: Candidates whose primary career background is in
+      talent, marketing, operations, or other non-investing/non-founding functions
+      should score below 4 overall regardless of track.
+
+      ---
+
+      ## TRACK A DIMENSIONS (Investor / Banker)
+      ## Track A weights sum to 100%: Work Experience 40%, Education 25%, LP/Fundraising 20%, Healthcare 10%, Founder Bonus 5%
+
+      ### Track A — Professional Work Experience (weight: 40%)
+
+      Use a tiered scoring system:
+
+      Tier 1 (score 8.1–10): Global top-tier investment firms or sovereign wealth:
+        - Global VC: a16z, Accel, Lightspeed, Insight Partners, Bessemer, Matrix Partners
+        - SEA VC: Sequoia Capital Southeast Asia, Grab Ventures, Gojek Ventures
+        - Sovereign Wealth: Temasek, GIC (Singapore), Khazanah Nasional (Malaysia)
+        - Global Investment Banks: Goldman Sachs, Citigroup, JPMorgan, Morgan Stanley
+        - Global PE: Blackstone, KKR, Carlyle, Apollo
+        - Extra weight if resume specifically mentions LP relationships, fund fundraising,
+          or capital development
+
+      Tier 2 (score 7.1–8): Top SEA-based venture or healthcare-focused firms:
+        - SEA VC: Heritas Capital, Pavilion Capital, B Capital Group, OrionHealthcare,
+          IMO Ventures, 500 Southeast Asia, Golden Gate Ventures, Monk's Hill Ventures,
+          Iterative, Wavemaker Partners, Vertex Ventures SE Asia, Openspace Ventures,
+          Jungle Ventures, Northstar Group, East Ventures
+        - SEA Family Office / Strategic: Salim Group, Ayala Corporation, CP Group,
+          YTL Group, Lippo Group
+        - Global growth equity with SEA presence: General Atlantic, Warburg Pincus
+
+      Tier 3 (score 6.1–7): Top-tier global management consulting firms:
+        - BCG, McKinsey, LEK, Bain, ZS Associates
+
+      Tier 4 (score 4–6): General consulting or banking:
+        - Big 4 non-strategy practices, commercial or retail banking,
+          internal consulting at large corporations, business analyst roles
+
+      Negative signals (score below 4):
+        - No consulting, banking, or investment experience
+        - Only corporate strategy roles without external firm experience
+        - Academic or research-only background
+
+      Include "work_experience_tier": "Tier 1", "Tier 2", "Tier 3", "Tier 4", or "None"
+
+      ---
+
+      ### Track A — Educational Background (weight: 25%)
+
+      Tier 1 (score 8.5–10):
+        - Global elite undergraduate: Ivy League, Stanford, MIT, Caltech, Oxford,
+          Cambridge, LSE
+        - SEA elite: NUS, NTU, INSEAD Asia Campus, SMU (Singapore Management University)
+        - Elite graduate (MBA): Harvard, Stanford, Wharton, Kellogg, Booth,
+          MIT Sloan, INSEAD, IIM A/B/C
+
+      Tier 2 (score 6.5–8.4):
+        - Strong undergrad: US Top 30, UC Berkeley, University of Michigan
+        - SEA strong: Chulalongkorn University, Mahidol University (Thailand),
+          University of Indonesia (UI), Universitas Gadjah Mada (UGM),
+          Ateneo de Manila University, De La Salle University (Philippines),
+          University of Malaya / Universiti Malaya (Malaysia),
+          Vietnam National University, Ho Chi Minh City University of Technology
+        - Executive / MBA programs: NUS Business School, Asian Institute of
+          Management (AIM), Sasin School of Management, IPMI International
+          Business School
+
+      Tier 3 (score 4–6.4):
+        - Regional universities with decent reputation
+
+      MBA boost: If the candidate holds an MBA, multiply their education score
+      by 1.10, capped at 10.
+
+      Include "education_tier": "Tier 1", "Tier 2", "Tier 3", or "None"
+
+      ---
+
+      ### Track A — LP / Fundraising / Capital Markets Experience (weight: 20%)
+
+      Score based on specific experience with:
+      - Raising a fund or managing LP relationships
+      - Private placements or capital development
+      - Structuring investment vehicles
+      - Direct engagement with institutional investors
+
+      Score 8–10: Direct LP relationship management or fund fundraising experience
+      Score 6–7: Supporting role in fundraising or capital markets exposure
+      Score 4–5: General understanding but no direct experience
+      Score below 4: No relevant experience
+
+      ---
+
+      ### Track A — Healthcare Sector Experience (weight: 10%)
+
+      Tier 1 (score 8–10): Healthcare-focused investing, healthcare IB,
+        or dedicated healthcare consulting practice
+      Tier 2 (score 5–7): Some healthcare deals, projects, or exposure
+      Below 5: No meaningful healthcare experience
+
+      ---
+
+      ### Track A — Founder Experience (weight: 5%, bonus only)
+
+      This is a NICE-TO-HAVE. Do NOT penalize Track A candidates for lacking it.
+
+      Score 8–10: Has meaningful founder experience (bonus)
+      Score 5: No founder experience (neutral — this is the default)
+
+      ---
+
+      ## TRACK B DIMENSIONS (Founder / Operator)
+      ## Track B weights sum to 100%: Founder Quality 35%, GTM/Commercial 25%, Fundraising 20%, Education 15%, Healthcare 5%
+
+      ### Track B — Founder Experience & Quality (weight: 35%)
+
+      Score 9–10: Venture-backed startup with significant capital raised ($1M+),
+        evidence of successful exit, acquisition, or strong traction
+      Score 7–8: Venture-backed startup with meaningful capital raised,
+        clear GTM execution
+      Score 5–6: Founded a real company but limited scale or bootstrapped only
+      Score 3–4: "Founder" of consulting/advisory firm or lifestyle business
+      Score below 3: No real founder experience, or misrepresenting advisory as startup
+
+      PENALIZE: Solo consulting, advisory firms, or boutique services
+      masquerading as startups.
+
+      Include "is_founder": true or false
+
+      ---
+
+      ### Track B — Commercial & GTM Track Record (weight: 25%)
+
+      Evidence of go-to-market execution:
+      - Revenue generation and growth
+      - Customer acquisition at scale
+      - Partnership development
+      - Market building or category creation
+      - Sales leadership
+
+      Score 8–10: Clear evidence of driving significant revenue or growth
+      Score 5–7: Some commercial responsibility but limited scale
+      Score below 5: No clear GTM track record
+
+      ---
+
+      ### Track B — Fundraising, Founder Side (weight: 20%)
+
+      Score 9–10: Raised Series A or later from institutional investors
+      Score 7–8: Raised seed round from notable angels or funds
+      Score 5–6: Raised friends & family or small angel round
+      Score 3–4: Attempted fundraising but unsuccessful
+      Score below 3: No fundraising experience
+
+      ---
+
+      ### Track B — Educational Background (weight: 15%)
+
+      Use the same tier system as Track A education above.
+      Do NOT heavily penalize Track B candidates for non-elite education
+      if they have strong founder credentials.
+
+      Include "education_tier": "Tier 1", "Tier 2", "Tier 3", or "None"
+
+      ---
+
+      ### Track B — Healthcare Sector Experience (weight: 5%, bonus only)
+
+      This is a NICE-TO-HAVE. Do NOT penalize Track B candidates for lacking it.
+      Score 5 (neutral) if no healthcare experience.
+
+      ---
+
+      ## STEP 3 — CAREER SUMMARY
+
+      Always include regardless of track:
+      - "career_summary": one sentence summarizing the candidate's background
+
+      ---
+
+      ## STEP 4 — FINAL SCORE
+
+      Compute a weighted composite score (0–10) using the appropriate track weights.
+      For Hybrid candidates, compute both and use the higher score.
+
+      Respond ONLY in valid JSON. Do not include any explanation outside the JSON.
+
+      Required JSON structure:
+      {
+        "score": <composite score 0-10, 1 decimal place>,
+        "track": "A" | "B" | "Hybrid",
+        "track_reasoning": "string",
+        "insufficient_data": true | false,
+        "data_note": "string or omit if not applicable",
+        "career_summary": "string",
+        "is_founder": true | false,
+        "dimension_scores": {
+          "work_experience": <0-10>,
+          "education": <0-10>,
+          "lp_fundraising": <0-10>,
+          "healthcare": <0-10>,
+          "founder_experience": <0-10>
+        },
+        "work_experience_tier": "Tier 1" | "Tier 2" | "Tier 3" | "Tier 4" | "None",
+        "education_tier": "Tier 1" | "Tier 2" | "Tier 3" | "None",
+        "reasoning": "<2-3 sentences explaining the overall score and fit>",
+        "recommendation": "Strong Yes" | "Yes" | "Maybe" | "No"
+      }
+
+  # Role 8: Managing Director, AI Buyouts
+  - job_id: "ae9abe7d-0492-400b-83dc-a90d45b5233d"
+    job_title: "Managing Director, AI Buyouts"
+    threshold: 7.5
+    archive_threshold: 5.5
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
+    founder_boost: 0.05
+    percentage_weights: true
+
+    criteria:
+      - name: "pe_experience"
+        label: "Private Equity/M&A Experience"
+        weight: "pct_35"
+        description: |
+          Tier 1 (score 9-10): Experience at top-tier global PE firms: Carlyle, Welsh Carson,
+          KKR, Blackstone, CVC, or equivalent caliber firm.
+
+          Tier 2 (score 7-8.9): Healthcare-specific PE or strong tier 2 firms: Shore Capital,
+          Incline Partners, Altaris, Windrose, Lone Pine, Avista, Water Street, Great Hill
+          Partners or equivalent.
+
+          Tier 3 (score 5-6.9): Boutique tier 3 PE firms or non-healthcare firms.
+
+          Below 4: No private equity experience, only corporate strategy without external firm
+          experience, academic/research only.
+
+          CRITICAL RULE: If the candidate's background is in a non-investing function
+          (talent, marketing, operations, HR, recruiting) — score this dimension below 4
+          regardless of firm prestige. Investing focus is mandatory.
+
+          Include "pe_tier": "Tier 1", "Tier 2", "Tier 3", or "Below" in your response.
+
+      - name: "career_trajectory"
+        label: "Career Trajectory"
+        weight: "pct_25"
+        description: |
+          Evaluate speed of career progression and upward mobility.
+
+          Positive signals:
+          - Rapid advancement with progressive responsibility
+          - At least one promotion at the same company
+          - Transitions showing intentionality and learning velocity
+          - Examples: Associate → VP → Principal → Director → MD
+
+          Negative signals:
+          - Lateral moves without upward momentum
+          - Career stagnation
+          - Long stints (5+ years) at large corporations without advancement
+          - Same role for 4+ years
+
+          Include "career_trajectory_summary": "<one sentence summary>" in your response.
+
+      - name: "healthcare_experience"
+        label: "Healthcare Experience"
+        weight: "pct_20"
+        description: |
+          Deep knowledge across care delivery, health tech, or healthcare services.
+          Ability to develop original investment theses in healthcare.
+
+          Score below 4 if healthcare is entirely absent from background.
+
+          Score 8-10: Deep healthcare investing or operating experience
+          Score 6-8: Healthcare sector exposure through deals or advisory
+          Score 4-6: Some healthcare adjacent experience
+          Below 4: No healthcare experience (hard penalty)
+
+      - name: "educational_background"
+        label: "Educational Background"
+        weight: "pct_15"
+        description: |
+          Tier 1 (score 8.5-10): Ivy League, Stanford, MIT, Caltech, Oxford, Cambridge, LSE,
+          IITs, IIM A/B/C, BITS Pilani, Delhi University St. Stephen's, Hindu College.
+          OR elite graduate: MBA at HBS, Stanford, Wharton, Kellogg, Booth, MIT Sloan,
+          INSEAD, IIM A/B/C; PhD at top research universities; MD at prestigious medical schools.
+
+          Tier 2 (score 6.5-8.4): US Top 30, UC Berkeley, Michigan, Virginia, MBA top 20,
+          strong regional programs, reputable Master's programs.
+
+          Tier 3 (score 4-6.4): Regional/local universities with decent reputation,
+          recognized private institutions.
+
+          Below 4: Unaccredited institutions, unexplained incomplete degrees, certificates
+          or extension programs only.
+
+          Include "education_tier": "Tier 1", "Tier 2", "Tier 3", or "Below" in your response.
+
+      - name: "ai_tech_fluency"
+        label: "AI & Tech Fluency"
+        weight: "pct_5"
+        description: |
+          Evidence of sophisticated AI tool usage beyond basic LLM prompting.
+          Has built systems or workflows using AI.
+          Treats AI as a core part of their analytical process.
+
+          Score 6+ ONLY if there is explicit evidence of AI systems-building or
+          workflow automation.
+
+          Score 8-10: Built AI-powered systems, automation workflows, or tools
+          Score 6-7: Active user of AI tools with evidence of sophisticated usage
+          Score 4-6: Basic AI/LLM usage mentioned
+          Below 4: No evidence of AI fluency
+
+          Also check if the candidate is a former founder or co-founder of a startup.
+          Include "is_founder": true/false in your response.
 
 weight_values:
   very_high: 4

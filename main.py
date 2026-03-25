@@ -92,6 +92,7 @@ def process_applications():
 
         new_count = 0
         alert_count = 0
+        archived_count = 0
         skipped_no_role = 0
 
         for app in applications:
@@ -137,8 +138,11 @@ def process_applications():
             print(f"  Total Score: {total_score}/10", flush=True)
             print(f"  Assessment: {scores.get('fit_summary', 'N/A')}", flush=True)
 
-            # Get role-specific threshold
+            # Get role-specific threshold and archive settings
             score_threshold = role_config.get("threshold", 7.0)
+            archive_threshold = role_config.get("archive_threshold")
+            archive_stage_id = role_config.get("archive_stage_id")
+            archive_reason = role_config.get("archive_reason")
 
             # Check NYC hard gate if applicable
             nyc_hard_gate = role_config.get("nyc_hard_gate", False)
@@ -167,6 +171,20 @@ def process_applications():
                         print(f"  Slack alert sent successfully!", flush=True)
                     else:
                         print(f"  Failed to send Slack alert", flush=True)
+            elif archive_threshold and total_score < archive_threshold:
+                print(f"  *** LOW SCORE (< {archive_threshold}) - Auto-archiving...", flush=True)
+                if archive_stage_id and archive_reason:
+                    success = ashby.archive_application(app_id, archive_stage_id, archive_reason)
+                    if success:
+                        archived_count += 1
+                        print(f"  Archived successfully!", flush=True)
+                        recommendation = "archived"
+                    else:
+                        print(f"  Failed to archive", flush=True)
+                        recommendation = "skip"
+                else:
+                    print(f"  Archive config missing, skipping archival", flush=True)
+                    recommendation = "skip"
             else:
                 print(f"  Score below threshold ({score_threshold}), logging only", flush=True)
                 recommendation = "skip"
@@ -186,6 +204,7 @@ def process_applications():
         print(f"  New applications processed: {new_count}", flush=True)
         print(f"  Skipped (not monitored roles): {skipped_no_role}", flush=True)
         print(f"  Alerts sent this run: {alert_count}", flush=True)
+        print(f"  Auto-archived (low score): {archived_count}", flush=True)
         print(f"  Total processed all-time: {stats['total_processed']}", flush=True)
         print(f"{'='*60}\n", flush=True)
 

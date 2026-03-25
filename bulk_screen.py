@@ -1,11 +1,11 @@
 """
-Bulk Resume Screener - One-time script to screen applications for a specific job.
+Bulk Resume Screener - Screens applications across ALL active roles in config.yaml.
 
-This script fetches applications from Ashby for the Talent Lead - India role,
-scores each one, and sends Slack alerts for high-scoring candidates.
+Loops through every role, fetches applications from Ashby, scores each one,
+and sends Slack alerts for high-scoring candidates.
 
 Usage:
-    python bulk_screen.py
+    python3 bulk_screen.py
 """
 
 import os
@@ -23,10 +23,15 @@ from tracker import ApplicationTracker
 load_dotenv()
 
 # Configuration
-JOB_ID = "63841c46-29a8-40dc-8184-0c6cf7407ccc"  # Executive Assistant & Workplace Operations
 MAX_APPLICATIONS = 600
 DELAY_BETWEEN_CANDIDATES = 2.5  # seconds
 STAGE_FILTER = "Application Review"  # Only process applications in this stage (set to None for all)
+
+# Roles to SKIP (job_titles containing these strings will be excluded)
+EXCLUDED_ROLES = ["Executive Assistant"]
+
+# ONLY run this specific role (set to None to run all roles)
+ONLY_RUN_JOB_ID = "d72d8750-c143-4889-94f2-02448d33c43c"  # Managing Director of Ventures, India
 
 
 def fetch_applications_for_job(ashby: AshbyClient, job_id: str, max_count: int, stage_filter: str = None) -> list:
@@ -40,15 +45,11 @@ def fetch_applications_for_job(ashby: AshbyClient, job_id: str, max_count: int, 
     filtered_applications = []
 
     try:
-        # Fetch applications filtered by job ID
-        result = ashby._request("/application.list", {
-            "jobId": job_id
-        })
+        result = ashby._request("/application.list", {"jobId": job_id})
         applications = result.get("results", [])
         all_applications.extend(applications)
         print(f"  Fetched {len(applications)} applications (page 1)", flush=True)
 
-        # Handle pagination
         page = 2
         while result.get("nextCursor"):
             result = ashby._request("/application.list", {
@@ -60,7 +61,6 @@ def fetch_applications_for_job(ashby: AshbyClient, job_id: str, max_count: int, 
             print(f"  Fetched {len(applications)} applications (page {page})", flush=True)
             page += 1
 
-        # Filter by stage if specified
         if stage_filter:
             for app in all_applications:
                 stage = app.get("currentInterviewStage", {})
@@ -70,7 +70,6 @@ def fetch_applications_for_job(ashby: AshbyClient, job_id: str, max_count: int, 
             print(f"  Filtered to {len(filtered_applications)} applications in '{stage_filter}'", flush=True)
             all_applications = filtered_applications
 
-        # Trim to max count if we exceeded it
         if len(all_applications) > max_count:
             print(f"  Trimming to {max_count} applications", flush=True)
             all_applications = all_applications[:max_count]
@@ -89,64 +88,45 @@ def load_config():
         return yaml.safe_load(f)
 
 
-def bulk_screen():
-    """Screen applications for a specific role."""
-    print("=" * 60, flush=True)
-    print("  Bulk Resume Screener", flush=True)
-    print(f"  Time: {datetime.utcnow().isoformat()}Z", flush=True)
-    print("=" * 60, flush=True)
-
-    # Initialize clients
-    ashby = AshbyClient()
-    scorer = ResumeScorer()
-    slack = SlackNotifier()
-    tracker = ApplicationTracker()
-
-    # Load role config
-    config = load_config()
-    roles = {role["job_id"]: role for role in config.get("roles", [])}
-    role_config = roles.get(JOB_ID, {})
-
-    score_threshold = scorer.get_score_threshold(job_id=JOB_ID)
+def screen_role(ashby, scorer, slack, tracker, role_config, job_id):
+    """Screen all applications for a single role. Returns a summary dict."""
+    score_threshold = scorer.get_score_threshold(job_id=job_id)
+    archive_threshold = role_config.get("archive_threshold")
+    archive_stage_id = role_config.get("archive_stage_id")
+    archive_reason_id = role_config.get("archive_reason_id") or role_config.get("archive_reason")  # Backward compatibility
     nyc_hard_gate = role_config.get("nyc_hard_gate", False)
-    print(f"Job ID: {JOB_ID}", flush=True)
-    print(f"Max applications: {MAX_APPLICATIONS}", flush=True)
+
     print(f"Score threshold for alerts: {score_threshold}", flush=True)
-    print(f"Delay between candidates: {DELAY_BETWEEN_CANDIDATES}s", flush=True)
+    if archive_threshold:
+        print(f"Archive threshold: {archive_threshold}", flush=True)
     print("=" * 60, flush=True)
 
-    # Fetch applications for the specific job
-    applications = fetch_applications_for_job(ashby, JOB_ID, MAX_APPLICATIONS, STAGE_FILTER)
+    applications = fetch_applications_for_job(ashby, job_id, MAX_APPLICATIONS, STAGE_FILTER)
     total_count = len(applications)
-    print(f"\nFound {total_count} applications for job {JOB_ID}", flush=True)
+    print(f"\nFound {total_count} applications for job {job_id}", flush=True)
 
     if total_count == 0:
-        print("No applications to process. Exiting.", flush=True)
-        return
+        print("No applications to process.", flush=True)
+        return {"total": 0, "reviewed": 0, "skipped": 0, "high_score": 0, "alerts": 0, "archived": 0, "errors": 0}
 
-    # Tracking stats
     reviewed_count = 0
     skipped_count = 0
     high_score_count = 0
     alerts_sent = 0
+    archived_count = 0
     errors = 0
 
-    # Process each application
     for i, app in enumerate(applications, 1):
         app_id = app.get("id")
-
         print(f"\n[{i}/{total_count}] Processing application {app_id}...", flush=True)
 
-        # Check if already processed
         if tracker.is_processed(app_id):
             print(f"  Already processed, skipping.", flush=True)
             skipped_count += 1
             continue
 
         try:
-            # Get full application details
             details = ashby.get_application_details(app)
-
             candidate_name = details["candidate_name"]
             candidate_id = details["candidate_id"]
             job_title = details["job_title"]
@@ -167,12 +147,10 @@ def bulk_screen():
                 skipped_count += 1
                 continue
 
-            # Score the resume
             print(f"  Scoring resume...", flush=True)
-            scores = scorer.score_resume(resume_text, job_title, candidate_name, job_id=JOB_ID)
+            scores = scorer.score_resume(resume_text, job_title, candidate_name, job_id=job_id)
             total_score = scores.get("total_score", 0)
 
-            # Log scores dynamically based on criteria
             print(f"  Scores:", flush=True)
             criteria_labels = scores.get("criteria_labels", {})
             for criterion_name, label in criteria_labels.items():
@@ -181,14 +159,12 @@ def bulk_screen():
             print(f"  Total Score: {total_score}/10", flush=True)
             print(f"  Assessment: {scores.get('fit_summary', 'N/A')}", flush=True)
 
-            # Check NYC status if hard gate is enabled
             nyc_confirmed = scores.get("nyc_confirmed", True)
             if nyc_hard_gate:
                 print(f"  NYC Location: {'Confirmed' if nyc_confirmed else 'NOT CONFIRMED'}", flush=True)
 
             reviewed_count += 1
 
-            # Decide action based on score and NYC gate
             if total_score >= score_threshold:
                 high_score_count += 1
                 if nyc_hard_gate and not nyc_confirmed:
@@ -209,11 +185,24 @@ def bulk_screen():
                         print(f"  Slack alert sent!", flush=True)
                     else:
                         print(f"  Failed to send Slack alert", flush=True)
+            elif archive_threshold and total_score < archive_threshold:
+                print(f"  *** LOW SCORE (< {archive_threshold}) - Auto-archiving...", flush=True)
+                if archive_stage_id and archive_reason_id:
+                    success = ashby.archive_application(app_id, archive_stage_id, archive_reason_id)
+                    if success:
+                        archived_count += 1
+                        print(f"  Archived successfully!", flush=True)
+                        recommendation = "archived"
+                    else:
+                        print(f"  Failed to archive", flush=True)
+                        recommendation = "skip"
+                else:
+                    print(f"  Archive config missing, skipping archival", flush=True)
+                    recommendation = "skip"
             else:
                 print(f"  Score below threshold, no alert.", flush=True)
                 recommendation = "skip"
 
-            # Mark as processed
             tracker.mark_processed(
                 application_id=app_id,
                 candidate_name=candidate_name,
@@ -225,22 +214,89 @@ def bulk_screen():
             print(f"  ERROR: {e}", flush=True)
             errors += 1
 
-        # Delay before next candidate (except for last one)
         if i < total_count:
             time.sleep(DELAY_BETWEEN_CANDIDATES)
 
-    # Print summary
+    return {
+        "total": total_count,
+        "reviewed": reviewed_count,
+        "skipped": skipped_count,
+        "high_score": high_score_count,
+        "alerts": alerts_sent,
+        "archived": archived_count,
+        "errors": errors,
+    }
+
+
+def bulk_screen():
+    """Loop through all roles in config.yaml and screen each one."""
+    print("=" * 60, flush=True)
+    print("  Bulk Resume Screener — All Roles", flush=True)
+    print(f"  Time: {datetime.utcnow().isoformat()}Z", flush=True)
+    print("=" * 60, flush=True)
+
+    # Initialize clients
+    ashby = AshbyClient()
+    scorer = ResumeScorer()
+    slack = SlackNotifier()
+    tracker = ApplicationTracker()
+
+    # Load all roles from config
+    config = load_config()
+    all_roles = config.get("roles", [])
+
+    # Filter out excluded roles
+    roles_to_run = []
+    for role in all_roles:
+        title = role.get("job_title", "")
+        job_id = role.get("job_id", "")
+
+        # If ONLY_RUN_JOB_ID is set, skip all other roles
+        if ONLY_RUN_JOB_ID and job_id != ONLY_RUN_JOB_ID:
+            print(f"Skipping role (not target job_id): {title}", flush=True)
+            continue
+
+        if any(excluded.lower() in title.lower() for excluded in EXCLUDED_ROLES):
+            print(f"Skipping excluded role: {title}", flush=True)
+        else:
+            roles_to_run.append(role)
+
+    print(f"\nRoles to screen: {len(roles_to_run)}", flush=True)
+    for role in roles_to_run:
+        print(f"  - {role.get('job_title')}", flush=True)
+    print("=" * 60, flush=True)
+
+    # Track overall summary
+    overall_summary = []
+
+    # Loop through each role
+    for role in roles_to_run:
+        job_id = role.get("job_id")
+        job_title = role.get("job_title", "Unknown Role")
+
+        print(f"\n{'=' * 60}", flush=True)
+        print(f"  ROLE: {job_title}", flush=True)
+        print(f"  Job ID: {job_id}", flush=True)
+        print("=" * 60, flush=True)
+
+        summary = screen_role(ashby, scorer, slack, tracker, role, job_id)
+        summary["job_title"] = job_title
+        overall_summary.append(summary)
+
+    # Print overall summary
     print("\n" + "=" * 60, flush=True)
-    print("  BULK SCREENING COMPLETE", flush=True)
+    print("  BULK SCREENING COMPLETE — ALL ROLES", flush=True)
     print("=" * 60, flush=True)
-    print(f"  Job ID:                      {JOB_ID}", flush=True)
-    print(f"  Total applications found:    {total_count}", flush=True)
-    print(f"  Already processed (skipped): {skipped_count}", flush=True)
-    print(f"  Candidates reviewed:         {reviewed_count}", flush=True)
-    print(f"  Scored 7+ (high score):      {high_score_count}", flush=True)
-    print(f"  Slack alerts sent:           {alerts_sent}", flush=True)
-    print(f"  Errors:                      {errors}", flush=True)
-    print("=" * 60, flush=True)
+    for s in overall_summary:
+        print(f"\n  Role: {s['job_title']}", flush=True)
+        print(f"    Applications found:    {s['total']}", flush=True)
+        print(f"    Already processed:     {s['skipped']}", flush=True)
+        print(f"    Reviewed:              {s['reviewed']}", flush=True)
+        print(f"    High scores:           {s['high_score']}", flush=True)
+        print(f"    Slack alerts sent:     {s['alerts']}", flush=True)
+        print(f"    Auto-archived:         {s['archived']}", flush=True)
+        print(f"    Errors:                {s['errors']}", flush=True)
+    print("\n" + "=" * 60, flush=True)
     print(f"  Completed at: {datetime.utcnow().isoformat()}Z", flush=True)
     print("=" * 60, flush=True)
 

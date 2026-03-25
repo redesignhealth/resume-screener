@@ -221,3 +221,47 @@ class AshbyClient:
             "resume_text": resume_text,
             "applied_at": application.get("createdAt"),
         }
+
+    def archive_application(self, application_id: str, stage_id: str, reason_id: str) -> bool:
+        """Move an application to the archived stage.
+
+        Args:
+            application_id: The Ashby application ID
+            stage_id: The interview stage ID for the archived stage
+            reason_id: The archive reason ID (not the text reason)
+
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            # Move to archived stage with required archive reason ID
+            payload = {
+                "applicationId": application_id,
+                "interviewStageId": stage_id
+            }
+
+            # Archive reason ID is required when moving to Archived stage
+            if reason_id:
+                payload["archiveReasonId"] = reason_id
+            else:
+                print(f"  ⚠️ Warning: No archive reason ID provided", flush=True)
+                return False
+
+            response = self._request("/application.changeStage", payload)
+
+            # Check if the API returned success: false
+            if isinstance(response, dict) and response.get("success") is False:
+                errors = response.get("errors", [])
+                error_info = response.get("errorInfo", {})
+                error_msg = error_info.get("message", str(errors))
+                print(f"  ⚠️ API returned error: {error_msg}", flush=True)
+                print(f"  Debug - Payload was: {payload}", flush=True)
+                return False
+
+            return True
+
+        except Exception as e:
+            print(f"  ⚠️ Error archiving application: {e}", flush=True)
+            import traceback
+            traceback.print_exc()
+            return False
