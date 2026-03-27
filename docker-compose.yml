@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      # API Keys (load from .env file locally)
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      ASHBY_API_KEY: ${ASHBY_API_KEY}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+
+      # Configuration
+      PORT: 8080
+      POLL_INTERVAL_MINUTES: ${POLL_INTERVAL_MINUTES:-60}
+      LOOKBACK_HOURS: ${LOOKBACK_HOURS:-1}
+      TRACKER_FILE: processed_applications.json
+
+    volumes:
+      # Persist processed applications tracking file
+      - ./processed_applications.json:/app/processed_applications.json
+      # Mount config for easy updates without rebuild
+      - ./config.yaml:/app/config.yaml
+    restart: unless-stopped
