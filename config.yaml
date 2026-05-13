@@ -979,6 +979,164 @@ roles:
           Also check if the candidate is a former founder or co-founder of a startup.
           Include "is_founder": true/false in your response.
 
+  # Role 9: Director of Platform, India
+  - job_id: "4779bcf4-4352-45a1-9df0-0a68c52bf27c"
+    job_title: "Director of Platform, India"
+    threshold: 7.0
+    archive_threshold: 5.0
+    archive_stage_id: "02014856-e5b9-4d98-8a7c-46868fda8484"
+    archive_reason_id: "1f6c3fe3-c08c-4fe0-8f49-da8e632b5f91"
+    founder_boost: false
+    percentage_weights: true
+
+    criteria:
+      - name: "india_market_experience"
+        label: "India Market Experience"
+        weight: "pct_9"
+        description: |
+          Has lived/worked in India in a professional capacity. Demonstrates
+          understanding of the Indian startup ecosystem, cultural context,
+          or founder talent market. Not geography alone — look for ecosystem
+          fluency (IIT/IIM networks, Tier 1 VC/startup names, founder
+          community references).
+
+          Score 8-10: Deep India ecosystem immersion — VC, accelerator, or 0→1 startup in India
+          Score 5-7: Meaningful India exposure (worked there, or strong India-market role)
+          Score 3-4: Peripheral India connection (studied there, brief stint)
+          Below 3: No India connection (DISQUALIFIER)
+
+          Include "india_connection": "Deep" | "Meaningful" | "Peripheral" | "None"
+
+      - name: "founder_sourcing_experience"
+        label: "Founder Sourcing, Talent Ecosystem, or Venture Platform Experience"
+        weight: "pct_22"
+        description: |
+          Has directly identified, engaged, or assessed founders or senior
+          executive talent. VC talent/platform teams, executive search,
+          head of talent at a startup, or similar. Not just recruiting —
+          look for evidence of network-building and ecosystem thinking.
+
+          CRITICAL: A pure talent acquisition, HR, or people operations background
+          is NOT a match. Must show founder-facing or ecosystem-building work.
+
+          Score 9-10: Led founder sourcing or platform function at VC/venture builder
+          Score 7-8: Executive recruiting, talent at early-stage startup, or talent partner role
+          Score 4-6: Generalist recruiting or HR with some senior search experience
+          Below 4: No relevant talent or sourcing experience (DISQUALIFIER)
+
+          Include "sourcing_type": "Founder/Platform" | "Executive Search" | "Generalist" | "None"
+
+      - name: "vc_startup_background"
+        label: "Venture Capital or 0-1 Startup Background"
+        weight: "pct_22"
+        description: |
+          8+ years of experience in VC (platform, talent, or investing) or
+          as an early employee/founder at a 0-1 company. The JD explicitly
+          calls this out. Look for early-stage company names, fund names,
+          or founder-adjacent titles.
+
+          Score 9-10: VC platform/talent role or founding team member at 0→1 startup
+          Score 6-8: Early employee (#1-20) at high-growth startup, or adjacent VC role
+          Score 4-5: Later-stage startup or corporate innovation context
+          Below 4: No startup or VC exposure
+
+          Include "vc_startup_tier": "Tier 1" | "Tier 2" | "Tier 3" | "None"
+
+      - name: "brand_community_building"
+        label: "Brand Building & Community/Marketing Experience"
+        weight: "pct_9"
+        description: |
+          Evidence of building a brand, community, or content presence —
+          events, thought leadership, campus programs, LinkedIn presence,
+          ecosystem convenings. The JD specifically calls out marketing &
+          communications as a core responsibility.
+
+          Score 8-10: Owned brand/community strategy — built programs, events, or content at scale
+          Score 5-7: Contributed to brand or community efforts; campus partnerships or speaker programs
+          Score 3-4: Informal network-building without structured programs
+          Below 3: No brand/community building evidence
+
+      - name: "ai_tech_fluency"
+        label: "AI & Technology Fluency"
+        weight: "pct_13"
+        description: |
+          The JD explicitly requires being an "AI native" who has built
+          workflows or systems beyond basic LLM usage. Look for: AI tools
+          in sourcing/recruiting workflows, Clay, Claude, Codex, automation, custom
+          tooling, or explicit mentions of building systems with AI.
+
+          Score 9-10: Built AI-powered recruiting or sourcing systems (Clay, custom automations, agents)
+          Score 6-8: Uses AI tools actively in workflow (beyond ChatGPT for writing)
+          Score 3-5: Mentions AI awareness or interest without demonstrated usage
+          Below 3: No AI/tech fluency signals
+
+          Include "ai_fluency_level": "Systems Builder" | "Active User" | "Aware" | "None"
+
+      - name: "healthcare_domain"
+        label: "Healthcare Domain Knowledge"
+        weight: "pct_4"
+        description: |
+          Experience in healthcare — either as a founder, operator, or in
+          a VC/talent role focused on health. Not required per the JD but
+          a strong signal given RH's focus.
+
+          Score 8-10: Deep healthcare operator or VC background
+          Score 5-7: Some healthcare exposure (adjacent sector, one relevant role)
+          Score 3-4: Awareness only — mentions health as an interest
+          Below 3: No healthcare background (acceptable for this role)
+
+      - name: "global_experience"
+        label: "Global / International Experience"
+        weight: "pct_9"
+        description: |
+          Worked across geographies or in a multinational context.
+          Specifically, experience collaborating with US-based counterparts
+          from India (or vice versa) given the US–India operating model.
+
+          Score 8-10: Led cross-geo teams or US–India collaboration in a professional capacity
+          Score 5-7: Worked internationally or with cross-cultural stakeholders
+          Score 3-4: Studied abroad or brief international exposure
+          Below 3: No cross-cultural experience
+
+      - name: "career_progression"
+        label: "Career Progression & Tenure Quality"
+        weight: "pct_8"
+        description: |
+          Candidate should have 6–18 years of total experience with a clear
+          upward trajectory (associate → manager → director or equivalent).
+          Look for at least one internal promotion (same company, increasing title/scope).
+
+          Negative signals: multiple roles under 2 years, unexplained resume gaps
+          (6+ months), or a flat title history with no scope growth.
+
+          Score 8-10: Clear upward arc with internal promotion(s); 6–18 yrs total; tenures mostly 2+ yrs
+          Score 6-7: Strong progression, one or two short stints explained by company events
+          Score 4-5: Generally upward but all moves are job-hops, or early career (6–8 yrs)
+          Score 2-3: Flat title history, frequent moves under 2 yrs, or notable gaps
+          Below 2: Multiple red flags OR <6 or >18 yrs experience (DISQUALIFIER)
+
+          Include "years_of_experience": <number>
+          Include "career_trajectory_summary": "<one sentence>"
+
+      - name: "educational_pedigree"
+        label: "Educational Pedigree"
+        weight: "pct_4"
+        description: |
+          Preference for graduates of highly ranked Indian or global universities.
+
+          Tier 1 India: IIT, IIM, BITS Pilani, SRCC, ISB, XLRI, SP Jain
+          Tier 1 Global: Ivy League, Oxbridge, LSE, INSEAD, top-25 MBA programs
+
+          A strong degree is a positive signal, not a hard requirement — exceptional
+          career progression can offset a lower-ranked institution.
+
+          Score 8-10: Tier 1 India (IIT/IIM/ISB/XLRI) or top-25 global university/MBA
+          Score 5-7: Well-regarded regional university or solid second-tier program
+          Score 3-4: Degree present but institution not notable
+          Below 3: No degree listed or unverifiable credentials
+
+          Include "education_tier": "Tier 1" | "Tier 2" | "Tier 3" | "None"
+
 weight_values:
   very_high: 4
   critical: 5

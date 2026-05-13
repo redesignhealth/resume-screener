@@ -31,6 +31,32 @@ This application:
 - `POLL_INTERVAL_MINUTES` - Polling frequency (default: 60)
 - `LOOKBACK_HOURS` - How far back to check for applications (default: 1)
 - `TRACKER_FILE` - Tracking file name (default: processed_applications.json)
+- `ENABLE_WEB_SEARCH_ENRICHMENT` - Enable web search for profile enrichment (default: false)
+
+## How Resume Data is Extracted
+
+The system attempts to get candidate information in this order:
+
+1. **Parsed resume text from Ashby API** (if available)
+2. **PDF resume download and parsing** (if Ashby provides file access)
+3. **LinkedIn profile scraping** (if URL available, but often blocked)
+4. **Email-based work history extraction** ✅ **Primary fallback**
+   - Extracts company names from email addresses
+   - Example: `mayank@elevationcapital.com` → "Elevation Capital"
+   - Identifies top firms: McKinsey, Elevation, Sequoia, etc.
+5. **Web search enrichment** (optional, requires `ENABLE_WEB_SEARCH_ENRICHMENT=true`)
+   - Uses DuckDuckGo to find public professional information
+   - May hit rate limits, recommended for manual use only
+
+### Why Email-Based Extraction Works Well
+
+Most professional candidates have work email addresses in Ashby (from previous applications or sourcing). The system:
+- Extracts domain names from non-personal emails
+- Maps domains to company names (e.g., `elevationcapital.com` → Elevation Capital)
+- Provides enough signal for venture experience, consulting background, etc.
+- Achieves scores of 7+ for strong candidates (triggering manual review)
+
+**Trade-off:** May miss specific focus areas (e.g., "healthcare investor") but captures the firm quality, which is the primary signal.
 
 ## Local Development
 

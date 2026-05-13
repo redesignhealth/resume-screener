@@ -64,3 +64,5 @@ typing-inspection==0.4.2
     # via pydantic
 urllib3==2.6.3
     # via requests
+pypdf2==3.0.1
+duckduckgo-search==6.3.5
