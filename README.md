@@ -67,7 +67,12 @@ Most professional candidates have work email addresses in Ashby (from previous a
    SLACK_WEBHOOK_URL=your_webhook_here
    ```
 
-2. **Run with Docker**:
+2. **Install dependencies** (requires [uv](https://docs.astral.sh/uv/)):
+   ```bash
+   uv sync
+   ```
+
+3. **Run with Docker**:
    ```bash
    docker compose up --build
    ```
